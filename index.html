@@ -10,19 +10,18 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const SUPABASE_URL = "https://oumjwuuoqeqafwkaeqtl.supabase.co/rest/v1/";
+    const SUPABASE_URL = "https://oumjwuuoqeqafwkaeqtl.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_ZEyRCvJrmjcIS5wliTLjjA_LgDEqRJC";
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function probarConexion() {
       const estado = document.getElementById("estado");
       try {
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
         estado.textContent = "✅ Conexión establecida correctamente con Supabase.";
       } catch (e) {
-        estado.textContent = "❌ Error de conexión: " + e.message;
+        estado.textContent = "❌ Error: " + e.message;
       }
     }
 
@@ -30,3 +29,4 @@
   </script>
 </body>
 </html>
+
