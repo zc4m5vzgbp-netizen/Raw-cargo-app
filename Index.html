@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Raw Cargo - Prueba de conexión</title>
+</head>
+<body>
+  <h1>Raw Cargo</h1>
+  <p id="estado">Conectando...</p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "PEGA_AQUI_TU_PROJECT_URL";
+    const SUPABASE_ANON_KEY = "PEGA_AQUI_TU_ANON_KEY";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function probarConexion() {
+      const estado = document.getElementById("estado");
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        estado.textContent = "✅ Conexión establecida correctamente con Supabase.";
+      } catch (e) {
+        estado.textContent = "❌ Error de conexión: " + e.message;
+      }
+    }
+
+    probarConexion();
+  </script>
+</body>
+</html>
