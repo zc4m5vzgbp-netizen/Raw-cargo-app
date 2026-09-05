@@ -2,22 +2,29 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Raw Cargo - Prueba de conexión</title>
+  <title>Raw Cargo - Diagnóstico</title>
 </head>
 <body>
   <h1>Raw Cargo</h1>
   <p id="estado">Conectando...</p>
 
+  <hr>
+  <h2>Prueba de inicio de sesión</h2>
+  <input type="email" id="email" placeholder="Correo"><br><br>
+  <input type="password" id="password" placeholder="Contraseña"><br><br>
+  <button onclick="probarLogin()">Iniciar sesión</button>
+  <p id="estadoLogin"></p>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://oumjwuuoqeqafwkaeqtl.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_ZEyRCvJrmjcIS5wliTLjjA_LgDEqRJC";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function probarConexion() {
       const estado = document.getElementById("estado");
       try {
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const { data, error } = await supabase.auth.getSession();
+        const { error } = await supabase.auth.getSession();
         if (error) throw error;
         estado.textContent = "✅ Conexión establecida correctamente con Supabase.";
       } catch (e) {
@@ -25,8 +32,21 @@
       }
     }
 
+    async function probarLogin() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const estadoLogin = document.getElementById("estadoLogin");
+      estadoLogin.textContent = "Verificando...";
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        estadoLogin.textContent = "✅ Sesión iniciada como: " + data.user.email;
+      } catch (e) {
+        estadoLogin.textContent = "❌ Error: " + e.message;
+      }
+    }
+
     probarConexion();
   </script>
 </body>
 </html>
-
