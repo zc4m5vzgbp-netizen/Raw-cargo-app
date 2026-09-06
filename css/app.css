@@ -1,0 +1,149 @@
+/* ============================================
+   RAW CARGO — Design Tokens
+   ============================================ */
+:root {
+  --color-bg: #f5f6f8;
+  --color-bg-secundario: #eef0f3;
+  --color-surface: #ffffff;
+  --color-border: #e2e4e9;
+
+  --color-texto: #14171f;
+  --color-texto-secundario: #5b6270;
+  --color-texto-tenue: #9aa0ac;
+
+  --color-primario: #1f4b8f;
+  --color-primario-hover: #173a70;
+  --color-primario-suave: #e8eef7;
+
+  --color-success: #1a7f4b;
+  --color-success-suave: #e6f4ec;
+  --color-warning: #b9770e;
+  --color-warning-suave: #fbf0e0;
+  --color-danger: #c0392b;
+  --color-danger-suave: #fbeae8;
+  --color-info: #2874a6;
+  --color-info-suave: #e8f2f8;
+
+  --font-familia: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-xs: 12px;
+  --font-sm: 14px;
+  --font-base: 16px;
+  --font-lg: 18px;
+  --font-xl: 22px;
+  --font-2xl: 28px;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(20, 23, 31, 0.05);
+  --shadow-md: 0 2px 10px rgba(20, 23, 31, 0.06);
+
+  --header-alto: 56px;
+  --nav-inferior-alto: 58px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-texto);
+  font-family: var(--font-familia);
+  font-size: var(--font-base);
+  -webkit-text-size-adjust: 100%;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#header {
+  height: var(--header-alto);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-md);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+#header .marca {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: 700;
+  font-size: var(--font-lg);
+  letter-spacing: 0.3px;
+}
+
+#header .marca .logo-placeholder {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primario);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--font-sm);
+}
+
+#header .usuario {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-sm);
+  color: var(--color-texto-secundario);
+}
+
+#header .usuario .avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--font-xs);
+}
+
+#layout {
+  flex: 1;
+  display: flex;
+}
+
+#contenido {
+  flex: 1;
+  padding: var(--space-md);
+  padding-bottom: calc(var(--nav-inferior-alto) + var(--space-md));
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+h1, h2, h3 { margin: 0 0 var(--space-sm) 0; }
+h1 { font-size: var(--font-2xl); font-weight: 700; }
+h2 { font-size: var(--font-xl); font-weight: 700; }
+h3 { font-size: var(--font-lg); font-weight: 600; }
+
+p { color: var(--color-texto-secundario); line-height: 1.5; }
+a { color: var(--color-primario); }
+
+.texto-tenue { color: var(--color-texto-tenue); }
+.texto-secundario { color: var(--color-texto-secundario); }
