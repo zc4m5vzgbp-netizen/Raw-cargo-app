@@ -1,0 +1,38 @@
+:root {
+  --color-fondo: #f7f7f8;
+  --color-texto: #1c1c1e;
+  --color-texto-secundario: #6e6e73;
+  --color-primario: #0a5c36;
+  --color-borde: #e0e0e2;
+  --color-error: #c0392b;
+  --color-exito: #1e7e34;
+  --radio: 10px;
+  --espaciado: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#contenido {
+  flex: 1;
+  padding: var(--espaciado);
+  padding-bottom: 80px; /* espacio para la barra inferior en móvil */
+}
+
+h1, h2, h3 { margin: 0 0 8px 0; }
+
+a { color: var(--color-primario); }
