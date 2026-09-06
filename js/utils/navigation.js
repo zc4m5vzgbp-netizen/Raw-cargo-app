@@ -1,4 +1,5 @@
 const rutas = {};
+const RUTAS_SECUNDARIAS = ['pagos', 'finanzas', 'gastos', 'configuracion', 'historial'];
 
 export function registrarRuta(nombre, renderFn) {
   rutas[nombre] = renderFn;
@@ -21,7 +22,9 @@ async function renderizarRutaActual(contenedor) {
 }
 
 function marcarActivo(nombre) {
-  document.querySelectorAll('#nav-inferior a, #nav-lateral a').forEach((a) => {
+  document.querySelectorAll('#nav-lateral a, #nav-inferior a, #mas-sheet-fondo a').forEach((a) => {
     a.classList.toggle('activo', a.getAttribute('href') === '#' + nombre);
   });
+  const btnMas = document.getElementById('btn-mas');
+  if (btnMas) btnMas.classList.toggle('activo', RUTAS_SECUNDARIAS.includes(nombre));
 }
