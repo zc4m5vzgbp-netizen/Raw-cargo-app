@@ -11,6 +11,7 @@ const REGLAS = [
   { buscar: 'precio_lb no puede ser negativo', mensaje: 'Uno de los precios por libra en la configuración de tarifas es negativo. Corrígelo antes de guardar.' },
   { buscar: 'Hueco o solapamiento entre tramos', mensaje: 'Los tramos de tarifa de envío tienen un hueco o se superponen. Revisa la configuración.' },
   { buscar: 'No hay ninguna configuración marcada como actual', mensaje: 'No hay ninguna configuración de tarifas activa. Contacta al administrador del sistema.' },
+  { buscar: 'violates not-null constraint', mensaje: 'Falta completar un campo obligatorio.' },
   { buscar: 'Invalid login credentials', mensaje: 'Correo o contraseña incorrectos.' },
   { buscar: 'Failed to fetch', mensaje: 'No se pudo conectar. Revisa tu conexión a internet e intenta de nuevo.' },
 ];
