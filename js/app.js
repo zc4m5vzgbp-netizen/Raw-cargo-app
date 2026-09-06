@@ -13,7 +13,6 @@ import * as finanzas from './modules/finanzas.js';
 import * as configuracion from './modules/configuracion.js';
 import * as historial from './modules/historial.js';
 
-// Estado global mínimo — solo lo realmente compartido por toda la app
 export const estado = { sesion: null };
 
 registrarRuta('dashboard', dashboard.render);
@@ -27,8 +26,17 @@ registrarRuta('configuracion', configuracion.render);
 registrarRuta('historial', historial.render);
 
 const elContenido = document.getElementById('contenido');
+const elHeader = document.getElementById('header');
 const elNavInferior = document.getElementById('nav-inferior');
 const elNavLateral = document.getElementById('nav-lateral');
+const elMasSheet = document.getElementById('mas-sheet-fondo');
+const elBtnMas = document.getElementById('btn-mas');
+const elBtnCerrarMas = document.getElementById('btn-cerrar-mas');
+const elBtnUsuario = document.getElementById('btn-usuario');
+const elMenuUsuario = document.getElementById('menu-usuario');
+const elAvatarIniciales = document.getElementById('avatar-iniciales');
+const elEmailUsuario = document.getElementById('email-usuario');
+const elBtnCerrarSesion = document.getElementById('btn-cerrar-sesion');
 
 async function iniciar() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -37,19 +45,31 @@ async function iniciar() {
 }
 
 function mostrarApp() {
+  elHeader.style.display = '';
   elNavInferior.style.display = '';
   elNavLateral.style.display = '';
+  actualizarUsuarioHeader();
   iniciarNavegacion(elContenido);
 }
 
 function mostrarLogin() {
+  elHeader.style.display = 'none';
   elNavInferior.style.display = 'none';
   elNavLateral.style.display = 'none';
   elContenido.innerHTML = `
-    <div style="max-width:340px;margin:40px auto;">
-      <h2>Raw Cargo</h2>
-      <input type="email" id="login-email" class="input" placeholder="Correo">
-      <input type="password" id="login-password" class="input" placeholder="Contraseña">
+    <div style="max-width:340px;margin:60px auto 0;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div class="logo-placeholder" style="width:48px;height:48px;font-size:18px;margin:0 auto 8px;">RC</div>
+        <h2 style="margin:0;">Raw Cargo</h2>
+      </div>
+      <div class="form-grupo">
+        <label class="form-label">Correo</label>
+        <input type="email" id="login-email" class="input" placeholder="tucorreo@ejemplo.com">
+      </div>
+      <div class="form-grupo">
+        <label class="form-label">Contraseña</label>
+        <input type="password" id="login-password" class="input" placeholder="••••••••">
+      </div>
       <button class="btn btn-primario" id="login-btn" style="width:100%">Iniciar sesión</button>
       <div id="login-error"></div>
     </div>
@@ -71,12 +91,30 @@ function mostrarLogin() {
   });
 }
 
+function actualizarUsuarioHeader() {
+  const email = estado.sesion?.user?.email || '';
+  elAvatarIniciales.textContent = email.slice(0, 2).toUpperCase();
+  elEmailUsuario.textContent = email;
+}
+
+elBtnUsuario?.addEventListener('click', () => { elMenuUsuario.hidden = !elMenuUsuario.hidden; });
+document.addEventListener('click', (e) => {
+  if (elMenuUsuario && !elMenuUsuario.hidden && !e.target.closest('#usuario-dropdown')) {
+    elMenuUsuario.hidden = true;
+  }
+});
+elBtnCerrarSesion?.addEventListener('click', async () => { await supabase.auth.signOut(); });
+
+elBtnMas?.addEventListener('click', () => { elMasSheet.hidden = false; });
+elBtnCerrarMas?.addEventListener('click', () => { elMasSheet.hidden = true; });
+elMasSheet?.addEventListener('click', (e) => { if (e.target === elMasSheet) elMasSheet.hidden = true; });
+window.addEventListener('hashchange', () => { if (elMasSheet) elMasSheet.hidden = true; });
+
 supabase.auth.onAuthStateChange((_evento, session) => {
   estado.sesion = session;
   if (!session) mostrarLogin();
 });
 
-// Aviso simple de conexión perdida (sin destruir la interfaz)
 window.addEventListener('offline', () => mostrarBannerConexion('Sin conexión a internet.'));
 window.addEventListener('online', () => document.getElementById('banner-conexion')?.remove());
 function mostrarBannerConexion(mensaje) {
