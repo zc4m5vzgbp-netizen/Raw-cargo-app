@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Raw Cargo</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <script>
+    function mostrarErrorFatal(mensaje) {
+      var div = document.createElement('div');
+      div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#c0392b;color:white;padding:12px;font-family:monospace;font-size:12px;white-space:pre-wrap;';
+      div.textContent = '⚠️ ' + mensaje;
+      document.body.appendChild(div);
+    }
+    window.onerror = function(msg, url, line, col) {
+      mostrarErrorFatal('Error: ' + msg + '\n' + (url ? url.split('/').slice(-2).join('/') : '') + ':' + line + ':' + col);
+    };
+    window.addEventListener('unhandledrejection', function(e) {
+      mostrarErrorFatal('Promesa rechazada: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+    });
+  </script>
+</head>
+<body>
+  <div id="app">
+    <nav id="nav-lateral">
+      <a href="#dashboard">Inicio</a>
+      <a href="#clientes">Clientes</a>
+      <a href="#ordenes">Órdenes</a>
+      <a href="#paquetes">Paquetes</a>
+      <a href="#pagos">Pagos</a>
+      <a href="#gastos">Gastos</a>
+      <a href="#finanzas">Finanzas</a>
+      <a href="#configuracion">Configuración</a>
+      <a href="#historial">Historial</a>
+    </nav>
+
+    <main id="contenido">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </main>
+
+    <nav id="nav-inferior">
+      <a href="#dashboard">Inicio</a>
+      <a href="#paquetes">Paquetes</a>
+      <a href="#ordenes">Compras</a>
+      <a href="#finanzas">Finanzas</a>
+      <a href="#historial">Más</a>
+    </nav>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
