@@ -20,6 +20,12 @@ export async function render(contenedor) {
         <form id="config-form">
 
           <div class="section-header"><h3 style="font-size:16px;">Envío — tramos</h3></div>
+          <div style="display:flex;gap:8px;margin-bottom:4px;">
+            <span class="form-label" style="flex:1;margin:0;">Desde (lb)</span>
+            <span class="form-label" style="flex:1;margin:0;">Hasta (lb)</span>
+            <span class="form-label" style="flex:1;margin:0;">Precio ($/lb)</span>
+            <span style="width:36px;flex-shrink:0;"></span>
+          </div>
           <div id="tramos-editor"></div>
           <button type="button" class="btn btn-secundario btn-sm" id="btn-agregar-tramo" style="margin-bottom:12px;">+ Agregar tramo</button>
 
@@ -109,9 +115,9 @@ export async function render(contenedor) {
   function pintarTramos() {
     elTramosEditor.innerHTML = tramosEstado.map((t, i) => `
       <div class="card" style="display:flex;gap:8px;align-items:center;padding:8px;">
-        <input type="number" step="0.01" class="input tramo-desde" data-i="${i}" placeholder="Desde" value="${t.desde ?? ''}" style="margin-bottom:0;">
-        <input type="number" step="0.01" class="input tramo-hasta" data-i="${i}" placeholder="Hasta (vacío = sin límite)" value="${t.hasta ?? ''}" style="margin-bottom:0;">
-        <input type="number" step="0.01" class="input tramo-precio" data-i="${i}" placeholder="Precio/lb" value="${t.precio_lb ?? ''}" style="margin-bottom:0;">
+        <input type="number" step="0.01" class="input tramo-desde" data-i="${i}" placeholder="lb" value="${t.desde ?? ''}" style="margin-bottom:0;">
+        <input type="number" step="0.01" class="input tramo-hasta" data-i="${i}" placeholder="Sin límite" value="${t.hasta ?? ''}" style="margin-bottom:0;">
+        <input type="number" step="0.01" class="input tramo-precio" data-i="${i}" placeholder="$/lb" value="${t.precio_lb ?? ''}" style="margin-bottom:0;">
         <button type="button" class="btn btn-fantasma btn-sm tramo-eliminar" data-i="${i}">✕</button>
       </div>
     `).join('');
@@ -164,7 +170,6 @@ export async function render(contenedor) {
     e.preventDefault();
     elFormError.innerHTML = '';
 
-    // Validaciones de UX — PostgreSQL sigue siendo la autoridad final
     const tramosLimpios = [];
     for (const t of tramosEstado) {
       const desde = Number(t.desde);
@@ -243,7 +248,7 @@ export async function render(contenedor) {
               ${tramos.map((t) => `
                 <tr>
                   <td>${formatLibras(t.desde)}</td>
-                  <td>${t.hasta != null ? formatLibras(t.hasta) : 'en adelante'}</td>
+                  <td>${t.hasta != null ? formatLibras(t.hasta) : 'Sin límite'}</td>
                   <td>${formatUSD(t.precio_lb)}</td>
                 </tr>
               `).join('')}
