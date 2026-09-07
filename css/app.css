@@ -132,7 +132,7 @@ html, body {
 #contenido {
   flex: 1;
   padding: var(--space-md);
-  padding-bottom: calc(var(--nav-inferior-alto) + var(--space-md) + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--nav-inferior-alto) + var(--space-xl) + env(safe-area-inset-bottom));
   max-width: 100%;
   overflow-x: hidden;
 }
