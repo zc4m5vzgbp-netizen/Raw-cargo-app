@@ -21,19 +21,39 @@ export async function render(contenedor, parametros = []) {
   return renderListado(contenedor, null);
 }
 
-// ---------- LISTADO ----------
+// ---------- LISTADO (con Seleccionar / Eliminar) ----------
 
 async function renderListado(contenedor, clienteIdFiltro) {
   contenedor.innerHTML = `
     <div class="section-header">
       <h2 id="ordenes-titulo">Órdenes</h2>
-      <a href="${clienteIdFiltro ? `#ordenes/nuevo/${clienteIdFiltro}` : '#ordenes/nuevo'}" class="btn btn-primario btn-sm">+ Nueva orden</a>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secundario btn-sm" id="btn-seleccionar">Seleccionar</button>
+        <a href="${clienteIdFiltro ? `#ordenes/nuevo/${clienteIdFiltro}` : '#ordenes/nuevo'}" class="btn btn-primario btn-sm">+ Nueva orden</a>
+      </div>
     </div>
+    <div id="barra-seleccion" hidden style="display:flex;gap:8px;margin-bottom:8px;">
+      <button class="btn btn-secundario btn-sm" id="btn-cancelar-seleccion">Cancelar selección</button>
+      <button class="btn btn-primario btn-sm" id="btn-eliminar-seleccionadas" disabled>Eliminar seleccionadas (0)</button>
+    </div>
+    <div id="confirmar-eliminar"></div>
     <div id="lista-ordenes"></div>
   `;
 
   const elLista = contenedor.querySelector('#lista-ordenes');
+  const elBtnSeleccionar = contenedor.querySelector('#btn-seleccionar');
+  const elBarraSeleccion = contenedor.querySelector('#barra-seleccion');
+  const elBtnCancelarSeleccion = contenedor.querySelector('#btn-cancelar-seleccion');
+  const elBtnEliminarSeleccionadas = contenedor.querySelector('#btn-eliminar-seleccionadas');
+  const elConfirmar = contenedor.querySelector('#confirmar-eliminar');
+
   mostrarCargando(elLista);
+
+  let seleccionando = false;
+  const seleccionados = new Set();
+  let ordenesData = [];
+  let totalesPorId = {};
+  let mapaElegibilidad = {};
 
   try {
     if (clienteIdFiltro) {
@@ -54,42 +74,180 @@ async function renderListado(contenedor, clienteIdFiltro) {
       .order('creado_en', { ascending: false });
     if (clienteIdFiltro) consulta = consulta.eq('cliente_id', clienteIdFiltro);
 
-    const [{ data: ordenes, error: errorOrdenes }, { data: totales, error: errorTotales }] = await Promise.all([
+    // Se consultan paquetes/pagos/gastos completos (solo orden_id) para evaluar,
+    // por cada orden, si cumple la regla de seguridad de eliminación.
+    const [
+      { data: ordenes, error: errorOrdenes },
+      { data: totales, error: errorTotales },
+      { data: paquetesRows, error: errorPaquetes },
+      { data: pagosRows, error: errorPagos },
+      { data: gastosRows, error: errorGastos },
+    ] = await Promise.all([
       consulta,
       supabase.from('v_orden_totales').select('orden_id, precio_total_cliente'),
+      supabase.from('paquetes').select('orden_id'),
+      supabase.from('pagos').select('orden_id'),
+      supabase.from('gastos').select('orden_id'),
     ]);
     if (errorOrdenes) throw errorOrdenes;
     if (errorTotales) throw errorTotales;
+    if (errorPaquetes) throw errorPaquetes;
+    if (errorPagos) throw errorPagos;
+    if (errorGastos) throw errorGastos;
+
+    ordenesData = ordenes;
+    totalesPorId = Object.fromEntries((totales || []).map((t) => [t.orden_id, t]));
+    const idsConPaquete = new Set((paquetesRows || []).map((r) => r.orden_id));
+    const idsConPago = new Set((pagosRows || []).map((r) => r.orden_id));
+    const idsConGasto = new Set((gastosRows || []).map((r) => r.orden_id));
+
+    mapaElegibilidad = Object.fromEntries(ordenes.map((o) => {
+      const razones = [];
+      if (ESTADOS_BLOQUEADOS.includes(o.estado)) razones.push(`ya está "${formatEstado(o.estado)}"`);
+      if (idsConPaquete.has(o.id)) razones.push('tiene paquetes asociados');
+      if (idsConPago.has(o.id)) razones.push('tiene pagos registrados');
+      if (idsConGasto.has(o.id)) razones.push('tiene gastos registrados');
+      return [o.id, { eliminable: razones.length === 0, razones, codigo: o.codigo }];
+    }));
 
     if (!ordenes.length) {
       mostrarVacio(elLista, 'No hay órdenes todavía. Toca "+ Nueva orden" para crear la primera.');
       return;
     }
 
-    const totalesPorId = Object.fromEntries((totales || []).map((t) => [t.orden_id, t]));
-
-    elLista.innerHTML = ordenes.map((o) => {
-      const total = totalesPorId[o.id];
-      const nombreCliente = o.clientes ? `${o.clientes.nombre} ${o.clientes.apellido || ''}`.trim() : '—';
-      return `
-        <a href="#ordenes/${o.id}" class="card" style="display:block;text-decoration:none;color:inherit;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-            <div>
-              <strong>${escaparHTML(o.codigo)}</strong><br>
-              <span class="texto-secundario">${escaparHTML(nombreCliente)}</span><br>
-              <span class="texto-tenue">${formatFecha(o.creado_en)} · ${formatTipoOperacion(o.tipo_operacion)}</span>
-            </div>
-            <div style="text-align:right;">
-              <span>${formatEstado(o.estado)}</span><br>
-              <strong>${total ? formatUSD(total.precio_total_cliente) : '—'}</strong>
-            </div>
-          </div>
-        </a>
-      `;
-    }).join('');
+    pintarFilas();
   } catch (e) {
     mostrarError(elLista, traducirError(e), () => renderListado(contenedor, clienteIdFiltro));
+    return;
   }
+
+  function pintarFilas() {
+    elLista.innerHTML = ordenesData.map((o) => {
+      const total = totalesPorId[o.id];
+      const nombreCliente = o.clientes ? `${o.clientes.nombre} ${o.clientes.apellido || ''}`.trim() : '—';
+      const filaInterna = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div>
+            <strong>${escaparHTML(o.codigo)}</strong><br>
+            <span class="texto-secundario">${escaparHTML(nombreCliente)}</span><br>
+            <span class="texto-tenue">${formatFecha(o.creado_en)} · ${formatTipoOperacion(o.tipo_operacion)}</span>
+          </div>
+          <div style="text-align:right;">
+            <span>${formatEstado(o.estado)}</span><br>
+            <strong>${total ? formatUSD(total.precio_total_cliente) : '—'}</strong>
+          </div>
+        </div>
+      `;
+
+      if (seleccionando) {
+        return `
+          <div class="card" data-fila="${o.id}" style="display:flex;gap:10px;align-items:flex-start;">
+            <input type="checkbox" data-check="${o.id}" ${seleccionados.has(o.id) ? 'checked' : ''} style="margin-top:4px;">
+            <div style="flex:1;">${filaInterna}</div>
+          </div>
+        `;
+      }
+      return `<a href="#ordenes/${o.id}" class="card" style="display:block;text-decoration:none;color:inherit;">${filaInterna}</a>`;
+    }).join('');
+
+    if (seleccionando) {
+      elLista.querySelectorAll('[data-fila]').forEach((fila) => {
+        const id = fila.dataset.fila;
+        const chk = fila.querySelector('input[type="checkbox"]');
+        fila.addEventListener('click', (e) => {
+          if (e.target === chk) return;
+          chk.checked = !chk.checked;
+          chk.dispatchEvent(new Event('change'));
+        });
+        chk.addEventListener('change', () => {
+          if (chk.checked) seleccionados.add(id);
+          else seleccionados.delete(id);
+          actualizarBarra();
+        });
+      });
+    }
+  }
+
+  function actualizarBarra() {
+    elBtnEliminarSeleccionadas.textContent = `Eliminar seleccionadas (${seleccionados.size})`;
+    elBtnEliminarSeleccionadas.disabled = seleccionados.size === 0;
+  }
+
+  elBtnSeleccionar.addEventListener('click', () => {
+    seleccionando = true;
+    seleccionados.clear();
+    elBtnSeleccionar.hidden = true;
+    elBarraSeleccion.hidden = false;
+    elConfirmar.innerHTML = '';
+    actualizarBarra();
+    pintarFilas();
+  });
+
+  elBtnCancelarSeleccion.addEventListener('click', () => {
+    seleccionando = false;
+    seleccionados.clear();
+    elBtnSeleccionar.hidden = false;
+    elBarraSeleccion.hidden = true;
+    elConfirmar.innerHTML = '';
+    pintarFilas();
+  });
+
+  elBtnEliminarSeleccionadas.addEventListener('click', () => {
+    const idsSeleccionados = [...seleccionados];
+    const eliminables = idsSeleccionados.filter((id) => mapaElegibilidad[id]?.eliminable);
+    const bloqueadas = idsSeleccionados.filter((id) => !mapaElegibilidad[id]?.eliminable);
+
+    let html = '<div class="card">';
+    if (bloqueadas.length) {
+      html += `
+        <div class="banner banner-error">
+          ${bloqueadas.length} de ${idsSeleccionados.length} orden(es) seleccionada(s) NO se puede(n) eliminar:
+          <ul style="margin:8px 0 0 18px;">
+            ${bloqueadas.map((id) => `<li>${escaparHTML(mapaElegibilidad[id].codigo)}: ${escaparHTML(mapaElegibilidad[id].razones.join(', '))}. Considera usar el estado "Cancelada" en su lugar.</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+    if (eliminables.length) {
+      html += `
+        <p style="margin-top:${bloqueadas.length ? '12px' : '0'};">
+          ¿Eliminar ${eliminables.length} orden(es) (${eliminables.map((id) => escaparHTML(mapaElegibilidad[id].codigo)).join(', ')})?
+          Sus productos asociados también se eliminarán automáticamente. Esta acción no se puede deshacer.
+        </p>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn btn-secundario btn-sm" id="btn-cancelar-confirmacion">Cancelar</button>
+          <button class="btn btn-primario btn-sm" id="btn-confirmar-eliminacion">Sí, eliminar ${eliminables.length}</button>
+        </div>
+      `;
+    } else {
+      html += `
+        <p style="margin-top:${bloqueadas.length ? '12px' : '0'};">Ninguna de las órdenes seleccionadas se puede eliminar.</p>
+        <button class="btn btn-secundario btn-sm" id="btn-cancelar-confirmacion">Cerrar</button>
+      `;
+    }
+    html += '</div>';
+    elConfirmar.innerHTML = html;
+
+    elConfirmar.querySelector('#btn-cancelar-confirmacion').addEventListener('click', () => {
+      elConfirmar.innerHTML = '';
+    });
+
+    const btnConfirmar = elConfirmar.querySelector('#btn-confirmar-eliminacion');
+    if (btnConfirmar) {
+      btnConfirmar.addEventListener('click', async () => {
+        btnConfirmar.disabled = true;
+        btnConfirmar.textContent = 'Eliminando...';
+        try {
+          const { error } = await supabase.from('ordenes').delete().in('id', eliminables);
+          if (error) throw error;
+          mostrarExito(`${eliminables.length} orden(es) eliminada(s)`);
+          await renderListado(contenedor, clienteIdFiltro);
+        } catch (err) {
+          elConfirmar.innerHTML = `<div class="banner banner-error">${traducirError(err)}</div>`;
+        }
+      });
+    }
+  });
 }
 
 // ---------- CREAR ----------
