@@ -15,10 +15,10 @@ function obtenerRutaActual() {
 }
 
 async function renderizarRutaActual(contenedor) {
-  const nombre = obtenerRutaActual();
+  const [nombre, ...parametros] = obtenerRutaActual().split('/');
   const render = rutas[nombre] || rutas['dashboard'];
   marcarActivo(nombre);
-  await render(contenedor);
+  await render(contenedor, parametros);
 }
 
 function marcarActivo(nombre) {
