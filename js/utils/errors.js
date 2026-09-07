@@ -18,6 +18,7 @@ const REGLAS = [
   { buscar: 'Cada tramo debe tener', mensaje: 'Cada tramo necesita sus tres valores completos: desde, hasta y precio por libra.' },
   { buscar: 'no puede estar vacío', mensaje: 'Debe existir al menos un tramo de envío configurado.' },
   { buscar: 'No hay ninguna configuración marcada como actual', mensaje: 'No hay ninguna configuración de tarifas activa. Contacta al administrador del sistema.' },
+  { buscar: 'violates foreign key constraint', mensaje: 'No se puede eliminar: existen registros relacionados (pagos, gastos u otros) que lo impiden.' },
   { buscar: 'violates not-null constraint', mensaje: 'Falta completar un campo obligatorio.' },
   { buscar: 'Invalid login credentials', mensaje: 'Correo o contraseña incorrectos.' },
   { buscar: 'Failed to fetch', mensaje: 'No se pudo conectar. Revisa tu conexión a internet e intenta de nuevo.' },
