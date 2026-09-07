@@ -62,12 +62,26 @@ async function iniciar() {
   estado.sesion = session;
   session ? mostrarApp() : mostrarLogin();
 }
+
+// Evita que iniciarNavegacion() (y su listener de hashchange interno)
+// se registre más de una vez si el usuario cierra sesión y vuelve a entrar.
+let navegacionIniciada = false;
+
 function mostrarApp() {
   elHeader.style.display = '';
   elNavInferior.style.display = '';
   elNavLateral.style.display = '';
   actualizarUsuarioHeader();
-  iniciarNavegacion(elContenido);
+  if (!navegacionIniciada) {
+    navegacionIniciada = true;
+    iniciarNavegacion(elContenido);
+  } else {
+    // Ya existe un listener de hashchange activo desde el primer login.
+    // En vez de registrar uno nuevo (lo que duplicaría cada render futuro),
+    // reutilizamos ese mismo listener disparando el evento manualmente para
+    // que vuelva a renderizar la ruta actual.
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+  }
 }
 function mostrarLogin() {
   elHeader.style.display = 'none';
