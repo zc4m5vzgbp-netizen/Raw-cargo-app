@@ -4,11 +4,15 @@ import { traducirError } from '../utils/errors.js';
 
 export async function render(contenedor) {
   let clienteEditando = null;
+  let debounceId = null;
 
   contenedor.innerHTML = `
     <div class="section-header">
       <h2>Clientes</h2>
       <button class="btn btn-primario btn-sm" id="btn-nuevo-cliente">+ Nuevo cliente</button>
+    </div>
+    <div class="form-grupo">
+      <input type="search" id="buscar-clientes" class="input" placeholder="Buscar por nombre, teléfono o WhatsApp…">
     </div>
     <div id="lista-clientes"></div>
 
@@ -55,6 +59,7 @@ export async function render(contenedor) {
   `;
 
   const elLista = contenedor.querySelector('#lista-clientes');
+  const elBuscar = contenedor.querySelector('#buscar-clientes');
   const elModalFondo = contenedor.querySelector('#cliente-modal-fondo');
   const elModalTitulo = contenedor.querySelector('#cliente-modal-titulo');
   const elForm = contenedor.querySelector('#cliente-form');
@@ -83,6 +88,11 @@ export async function render(contenedor) {
   contenedor.querySelector('#btn-nuevo-cliente').addEventListener('click', () => abrirModal(null));
   contenedor.querySelector('#btn-cerrar-cliente-modal').addEventListener('click', cerrarModal);
   elModalFondo.addEventListener('click', (e) => { if (e.target === elModalFondo) cerrarModal(); });
+
+  elBuscar.addEventListener('input', () => {
+    clearTimeout(debounceId);
+    debounceId = setTimeout(() => cargarClientes(elBuscar.value), 300);
+  });
 
   elForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -116,7 +126,7 @@ export async function render(contenedor) {
 
       mostrarExito(clienteEditando ? 'Cliente actualizado' : 'Cliente creado');
       cerrarModal();
-      await cargarClientes();
+      await cargarClientes(elBuscar.value);
     } catch (err) {
       elFormError.innerHTML = `<div class="banner banner-error">${traducirError(err)}</div>`;
     } finally {
@@ -125,17 +135,33 @@ export async function render(contenedor) {
     }
   });
 
-  async function cargarClientes() {
+  async function cargarClientes(termino = '') {
     mostrarCargando(elLista);
+    const t = termino.trim();
     try {
-      const { data, error } = await supabase
+      let consulta = supabase
         .from('clientes')
         .select('id, nombre, apellido, telefono, whatsapp, ciudad, direccion_entrega, notas')
         .order('creado_en', { ascending: false });
+
+      if (t) {
+        // Se remueven caracteres especiales del filtro .or() de PostgREST (, ( ) %)
+        // para que un teléfono como "(555) 123-4567" no rompa la consulta.
+        const seguro = t.replace(/[,()%]/g, ' ').trim();
+        if (seguro) {
+          consulta = consulta.or(
+            `nombre.ilike.%${seguro}%,apellido.ilike.%${seguro}%,telefono.ilike.%${seguro}%,whatsapp.ilike.%${seguro}%`
+          );
+        }
+      }
+
+      const { data, error } = await consulta;
       if (error) throw error;
 
       if (!data.length) {
-        mostrarVacio(elLista, 'No tienes clientes todavía. Toca "+ Nuevo cliente" para agregar el primero.');
+        mostrarVacio(elLista, t
+          ? `No se encontraron clientes para "${escaparHTML(t)}".`
+          : 'No tienes clientes todavía. Toca "+ Nuevo cliente" para agregar el primero.');
         return;
       }
 
@@ -163,7 +189,7 @@ export async function render(contenedor) {
         });
       });
     } catch (e) {
-      mostrarError(elLista, traducirError(e), cargarClientes);
+      mostrarError(elLista, traducirError(e), () => cargarClientes(termino));
     }
   }
 
