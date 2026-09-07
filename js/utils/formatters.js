@@ -41,3 +41,17 @@ export function formatTipoOperacion(tipo) {
   };
   return mapa[tipo] || tipo;
 }
+
+export function formatEntidad(entidadTipo) {
+  const mapa = {
+    clientes: 'Cliente', ordenes: 'Orden', paquetes: 'Paquete', productos: 'Producto',
+    producto_paquete: 'Asignación de producto', pagos: 'Pago', gastos: 'Gasto',
+    cotizaciones: 'Cotización', config_versiones: 'Configuración', adjuntos: 'Adjunto',
+  };
+  return mapa[entidadTipo] || entidadTipo;
+}
+
+export function formatAccion(accion) {
+  const mapa = { creacion: 'creado', edicion: 'editado' };
+  return mapa[accion] || accion;
+}
