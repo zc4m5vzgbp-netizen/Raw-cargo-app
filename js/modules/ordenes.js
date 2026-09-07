@@ -262,9 +262,11 @@ async function cargarDetalle(contenedor, ordenId) {
 
     <div class="section-header"><h3>Totales</h3></div>
     <div class="card">
-      <div style="display:flex;justify-content:space-between;"><span>Precio total al cliente</span><strong>${formatUSD(totales.precio_total_cliente)}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Valor de la mercancía</span><span>${formatUSD(orden.valor_mercancia_total)}</span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;"><span>Precio total al cliente</span><strong>${formatUSD(totales.precio_total_cliente)}</strong></div>
       <div style="display:flex;justify-content:space-between;margin-top:4px;"><span>Costo total</span><span>${formatUSD(totales.costo_total)}</span></div>
       <div style="display:flex;justify-content:space-between;margin-top:4px;"><span>Ganancia</span><strong>${formatUSD(totales.ganancia)}</strong></div>
+      <div class="texto-tenue" style="margin-top:8px;">Envío, seguro, costo de proveedor y ganancia se calculan a partir de los paquetes de la orden — estarán en $0 hasta que la orden tenga al menos un paquete asociado (próxima fase).</div>
     </div>
   `;
 
