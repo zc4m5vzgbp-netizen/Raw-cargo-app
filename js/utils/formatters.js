@@ -32,3 +32,12 @@ export function formatEstado(estado) {
   };
   return mapa[estado] || estado;
 }
+
+export function formatTipoOperacion(tipo) {
+  const mapa = {
+    personal_shopper: 'Personal Shopper',
+    envio: 'Envío',
+    personal_shopper_envio: 'Personal Shopper + Envío',
+  };
+  return mapa[tipo] || tipo;
+}
