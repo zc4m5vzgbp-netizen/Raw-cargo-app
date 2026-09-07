@@ -411,9 +411,11 @@ async function cargarDetalle(contenedor, ordenId) {
             <div id="detalle-estado-error"></div>`
         }
       </div>
-      <div style="display:flex;gap:8px;margin-top:12px;">
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
         <a href="#paquetes/orden/${orden.id}" class="btn btn-secundario btn-sm">Ver paquetes</a>
         <a href="#paquetes/nuevo/${orden.id}" class="btn btn-secundario btn-sm">+ Nuevo paquete</a>
+        <a href="#pagos/orden/${orden.id}" class="btn btn-secundario btn-sm">Ver pagos</a>
+        <a href="#pagos/nuevo/${orden.id}" class="btn btn-secundario btn-sm">+ Registrar pago</a>
       </div>
     </div>
 
