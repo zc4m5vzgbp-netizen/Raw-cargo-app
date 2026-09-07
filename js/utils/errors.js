@@ -7,6 +7,7 @@ const REGLAS = [
   { buscar: 'ya está completada', mensaje: 'Esta orden ya fue completada y no puede modificarse.' },
   { buscar: 'ya está cancelada', mensaje: 'Esta orden ya fue cancelada y no puede modificarse.' },
   { buscar: 'falta configurar el pago al repartidor', mensaje: 'No puedes marcar este paquete como entregado: falta configurar la tarifa del repartidor en Configuración.' },
+  { buscar: 'no pertenece a la misma orden que el paquete', mensaje: 'Ese producto pertenece a otra orden y no puede asignarse a este paquete.' },
   { buscar: 'supera la cantidad total del producto', mensaje: 'Estás intentando asignar más unidades de las que tiene este producto disponibles.' },
   { buscar: 'precio_lb no puede ser negativo', mensaje: 'Uno de los precios por libra en los tramos de envío es negativo. Corrígelo antes de guardar.' },
   { buscar: 'Hueco o solapamiento entre tramos', mensaje: 'Los tramos de envío tienen un hueco o se superponen entre sí. Revisa que cada tramo continúe exactamente donde termina el anterior.' },
