@@ -24,3 +24,9 @@ export function mostrarExito(mensaje) {
   document.body.appendChild(div);
   setTimeout(() => div.remove(), 3000);
 }
+
+export function escaparHTML(texto) {
+  const div = document.createElement('div');
+  div.textContent = texto;
+  return div.innerHTML;
+}
