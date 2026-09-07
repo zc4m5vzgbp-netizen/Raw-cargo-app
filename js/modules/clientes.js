@@ -1,9 +1,10 @@
 import { supabase } from '../supabase.js';
-import { mostrarCargando, mostrarError, mostrarVacio, mostrarExito, escaparHTML } from '../utils/ui.js';
+import { mostrarCargando, mostrarError, mostrarVacio, mostrarExito, escaparHTML, confirmar, huboCambios } from '../utils/ui.js';
 import { traducirError } from '../utils/errors.js';
 
 export async function render(contenedor) {
   let clienteEditando = null;
+  let valoresIniciales = {};
   let debounceId = null;
 
   contenedor.innerHTML = `
@@ -66,6 +67,18 @@ export async function render(contenedor) {
   const elFormError = contenedor.querySelector('#cliente-form-error');
   const elBtnGuardar = contenedor.querySelector('#btn-guardar-cliente');
 
+  function obtenerValoresFormulario() {
+    return {
+      nombre: contenedor.querySelector('#cf-nombre').value,
+      apellido: contenedor.querySelector('#cf-apellido').value,
+      telefono: contenedor.querySelector('#cf-telefono').value,
+      whatsapp: contenedor.querySelector('#cf-whatsapp').value,
+      ciudad: contenedor.querySelector('#cf-ciudad').value,
+      direccion: contenedor.querySelector('#cf-direccion').value,
+      notas: contenedor.querySelector('#cf-notas').value,
+    };
+  }
+
   function abrirModal(cliente) {
     clienteEditando = cliente || null;
     elModalTitulo.textContent = cliente ? 'Editar cliente' : 'Nuevo cliente';
@@ -78,6 +91,7 @@ export async function render(contenedor) {
     contenedor.querySelector('#cf-direccion').value = cliente?.direccion_entrega || '';
     contenedor.querySelector('#cf-notas').value = cliente?.notas || '';
     elModalFondo.hidden = false;
+    valoresIniciales = obtenerValoresFormulario();
   }
 
   function cerrarModal() {
@@ -85,9 +99,23 @@ export async function render(contenedor) {
     clienteEditando = null;
   }
 
+  async function intentarCerrarModal() {
+    if (huboCambios(valoresIniciales, obtenerValoresFormulario())) {
+      const salir = await confirmar({
+        mensaje: '¿Seguro que quieres salir sin guardar?',
+        detalle: 'Los cambios que has realizado se perderán.',
+        textoConfirmar: 'Salir sin guardar',
+        textoCancelar: 'Seguir editando',
+        primarioEs: 'cancelar',
+      });
+      if (!salir) return;
+    }
+    cerrarModal();
+  }
+
   contenedor.querySelector('#btn-nuevo-cliente').addEventListener('click', () => abrirModal(null));
-  contenedor.querySelector('#btn-cerrar-cliente-modal').addEventListener('click', cerrarModal);
-  elModalFondo.addEventListener('click', (e) => { if (e.target === elModalFondo) cerrarModal(); });
+  contenedor.querySelector('#btn-cerrar-cliente-modal').addEventListener('click', intentarCerrarModal);
+  elModalFondo.addEventListener('click', (e) => { if (e.target === elModalFondo) intentarCerrarModal(); });
 
   elBuscar.addEventListener('input', () => {
     clearTimeout(debounceId);
@@ -111,6 +139,12 @@ export async function render(contenedor) {
       elFormError.innerHTML = '<div class="banner banner-error">El nombre es obligatorio.</div>';
       return;
     }
+
+    const confirmado = await confirmar({
+      mensaje: clienteEditando ? '¿Seguro que quieres actualizar estos datos?' : '¿Guardar este nuevo cliente?',
+      textoConfirmar: clienteEditando ? 'Confirmar actualización' : 'Guardar',
+    });
+    if (!confirmado) return;
 
     elBtnGuardar.disabled = true;
     elBtnGuardar.textContent = 'Guardando...';
