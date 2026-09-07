@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { mostrarCargando, mostrarError, mostrarExito } from '../utils/ui.js';
+import { mostrarCargando, mostrarError, mostrarExito, confirmar, huboCambios } from '../utils/ui.js';
 import { traducirError } from '../utils/errors.js';
 import { formatUSD, formatPorcentaje, formatLibras } from '../utils/formatters.js';
 
@@ -111,6 +111,19 @@ export async function render(contenedor) {
   const elBtnGuardar = contenedor.querySelector('#btn-guardar-config');
 
   let tramosEstado = [];
+  let valoresIniciales = {};
+
+  function obtenerValoresFormulario() {
+    const campos = [
+      'cf-envio-peso-minimo', 'cf-envio-precio-minimo', 'cf-divisor-volumetrico',
+      'cf-proveedor-costo-lb', 'cf-proveedor-costo-minimo', 'cf-proveedor-minimo-lb',
+      'cf-seguro-costo-pct', 'cf-seguro-precio-pct', 'cf-ps-pct', 'cf-ps-minimo',
+      'cf-entrega-repartidor', 'cf-entrega-monto-cliente',
+    ];
+    const valores = { tramos: JSON.stringify(tramosEstado), entregaActiva: contenedor.querySelector('#cf-entrega-activa').checked };
+    for (const id of campos) valores[id] = contenedor.querySelector('#' + id).value;
+    return valores;
+  }
 
   function pintarTramos() {
     elTramosEditor.innerHTML = tramosEstado.map((t, i) => `
@@ -160,11 +173,27 @@ export async function render(contenedor) {
     contenedor.querySelector('#cf-entrega-monto-cliente').value = config.entrega_precio_cliente_monto;
     elFormError.innerHTML = '';
     elModalFondo.hidden = false;
+    valoresIniciales = obtenerValoresFormulario();
   }
 
   function cerrarModal() { elModalFondo.hidden = true; }
-  contenedor.querySelector('#btn-cerrar-config-modal').addEventListener('click', cerrarModal);
-  elModalFondo.addEventListener('click', (e) => { if (e.target === elModalFondo) cerrarModal(); });
+
+  async function intentarCerrarModal() {
+    if (huboCambios(valoresIniciales, obtenerValoresFormulario())) {
+      const salir = await confirmar({
+        mensaje: '¿Seguro que quieres salir sin guardar?',
+        detalle: 'Los cambios que has realizado se perderán.',
+        textoConfirmar: 'Salir sin guardar',
+        textoCancelar: 'Seguir editando',
+        primarioEs: 'cancelar',
+      });
+      if (!salir) return;
+    }
+    cerrarModal();
+  }
+
+  contenedor.querySelector('#btn-cerrar-config-modal').addEventListener('click', intentarCerrarModal);
+  elModalFondo.addEventListener('click', (e) => { if (e.target === elModalFondo) intentarCerrarModal(); });
 
   elForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -219,6 +248,13 @@ export async function render(contenedor) {
       elFormError.innerHTML = '<div class="banner banner-error">La tarifa del repartidor no puede ser negativa.</div>';
       return;
     }
+
+    const confirmado = await confirmar({
+      mensaje: '¿Seguro que quieres crear esta nueva versión de configuración?',
+      detalle: 'Se aplicará a partir de ahora a todo cálculo nuevo. La versión anterior queda conservada en el historial.',
+      textoConfirmar: 'Crear nueva versión',
+    });
+    if (!confirmado) return;
 
     elBtnGuardar.disabled = true;
     elBtnGuardar.textContent = 'Guardando...';
