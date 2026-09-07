@@ -22,7 +22,6 @@ export async function render(contenedor, parametros = []) {
 }
 
 // ---------- LISTADO (con Seleccionar / Eliminar) ----------
-// Sin cambios en esta ronda — fuera del alcance de la mejora de confirmaciones.
 
 async function renderListado(contenedor, clienteIdFiltro) {
   contenedor.innerHTML = `
@@ -250,8 +249,6 @@ async function renderListado(contenedor, clienteIdFiltro) {
 }
 
 // ---------- CREAR ----------
-// Cambios en esta ronda: confirmación antes de guardar, y protección
-// "salir sin guardar" al pulsar Cancelar si hubo cambios.
 
 async function renderCrearOrden(contenedor, clienteIdPreseleccionado) {
   contenedor.innerHTML = `
@@ -263,11 +260,11 @@ async function renderCrearOrden(contenedor, clienteIdPreseleccionado) {
     <form id="form-crear-orden">
       <div class="form-grupo">
         <label class="form-label">Cliente <span class="requerido">*</span></label>
-        <select id="co-cliente" class="input" required ${clienteIdPreseleccionado ? 'disabled' : ''}></select>
+        <select id="co-cliente" class="select" required ${clienteIdPreseleccionado ? 'disabled' : ''}></select>
       </div>
       <div class="form-grupo">
         <label class="form-label">Tipo de operación <span class="requerido">*</span></label>
-        <select id="co-tipo" class="input" required>
+        <select id="co-tipo" class="select" required>
           <option value="personal_shopper">Personal Shopper</option>
           <option value="envio">Envío</option>
           <option value="personal_shopper_envio">Personal Shopper + Envío</option>
@@ -306,8 +303,6 @@ async function renderCrearOrden(contenedor, clienteIdPreseleccionado) {
       elSelectCliente.value = clienteIdPreseleccionado;
     }
 
-    // Se captura después de cargar los clientes, para incluir el valor
-    // real por defecto del <select> (no un valor vacío inventado).
     valoresIniciales = obtenerValoresFormulario();
   } catch (e) {
     elError.innerHTML = `<div class="banner banner-error">${traducirError(e)}</div>`;
@@ -341,10 +336,7 @@ async function renderCrearOrden(contenedor, clienteIdPreseleccionado) {
       return;
     }
 
-    const confirmado = await confirmar({
-      mensaje: '¿Guardar esta nueva orden?',
-      textoConfirmar: 'Guardar',
-    });
+    const confirmado = await confirmar({ mensaje: '¿Guardar esta nueva orden?', textoConfirmar: 'Guardar' });
     if (!confirmado) return;
 
     elBtn.disabled = true;
@@ -369,9 +361,6 @@ async function renderCrearOrden(contenedor, clienteIdPreseleccionado) {
 }
 
 // ---------- DETALLE ----------
-// Cambio en esta ronda: confirmación antes de guardar al agregar un producto.
-// Sin botón "Cancelar" en ese formulario (fuera de alcance), y sin cambios
-// en el cambio de estado (no forma parte del alcance acordado).
 
 async function renderDetalle(contenedor, ordenId) {
   contenedor.innerHTML = `<div id="detalle-orden"></div>`;
@@ -416,11 +405,15 @@ async function cargarDetalle(contenedor, ordenId) {
         <span class="texto-secundario">Estado</span><br>
         ${bloqueada
           ? `${formatEstado(orden.estado)} — estado final, no puede modificarse`
-          : `<select id="detalle-estado" class="input">
+          : `<select id="detalle-estado" class="select">
               ${ESTADOS.map((estVal) => `<option value="${estVal}" ${estVal === orden.estado ? 'selected' : ''}>${formatEstado(estVal)}</option>`).join('')}
             </select>
             <div id="detalle-estado-error"></div>`
         }
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <a href="#paquetes/orden/${orden.id}" class="btn btn-secundario btn-sm">Ver paquetes</a>
+        <a href="#paquetes/nuevo/${orden.id}" class="btn btn-secundario btn-sm">+ Nuevo paquete</a>
       </div>
     </div>
 
@@ -462,7 +455,7 @@ async function cargarDetalle(contenedor, ordenId) {
       <div style="display:flex;justify-content:space-between;margin-top:4px;"><span>Precio total al cliente</span><strong>${formatUSD(totales.precio_total_cliente)}</strong></div>
       <div style="display:flex;justify-content:space-between;margin-top:4px;"><span>Costo total</span><span>${formatUSD(totales.costo_total)}</span></div>
       <div style="display:flex;justify-content:space-between;margin-top:4px;"><span>Ganancia</span><strong>${formatUSD(totales.ganancia)}</strong></div>
-      <div class="texto-tenue" style="margin-top:8px;">Envío, seguro, costo de proveedor y ganancia se calculan a partir de los paquetes de la orden — estarán en $0 hasta que la orden tenga al menos un paquete asociado (próxima fase).</div>
+      <div class="texto-tenue" style="margin-top:8px;">Envío, seguro, costo de proveedor y ganancia se calculan a partir de los paquetes de la orden.</div>
     </div>
   `;
 
@@ -495,10 +488,7 @@ async function cargarDetalle(contenedor, ordenId) {
         return;
       }
 
-      const confirmado = await confirmar({
-        mensaje: '¿Guardar este producto?',
-        textoConfirmar: 'Guardar',
-      });
+      const confirmado = await confirmar({ mensaje: '¿Guardar este producto?', textoConfirmar: 'Guardar' });
       if (!confirmado) return;
 
       const btn = el.querySelector('#btn-agregar-producto');
