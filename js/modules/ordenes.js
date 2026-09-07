@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { mostrarCargando, mostrarError, mostrarVacio, mostrarExito, escaparHTML } from '../utils/ui.js';
+import { mostrarCargando, mostrarError, mostrarVacio, mostrarExito, escaparHTML, confirmar, huboCambios } from '../utils/ui.js';
 import { traducirError } from '../utils/errors.js';
 import { formatUSD, formatFecha, formatEstado, formatTipoOperacion } from '../utils/formatters.js';
 
@@ -22,6 +22,7 @@ export async function render(contenedor, parametros = []) {
 }
 
 // ---------- LISTADO (con Seleccionar / Eliminar) ----------
+// Sin cambios en esta ronda — fuera del alcance de la mejora de confirmaciones.
 
 async function renderListado(contenedor, clienteIdFiltro) {
   contenedor.innerHTML = `
@@ -74,8 +75,6 @@ async function renderListado(contenedor, clienteIdFiltro) {
       .order('creado_en', { ascending: false });
     if (clienteIdFiltro) consulta = consulta.eq('cliente_id', clienteIdFiltro);
 
-    // Se consultan paquetes/pagos/gastos completos (solo orden_id) para evaluar,
-    // por cada orden, si cumple la regla de seguridad de eliminación.
     const [
       { data: ordenes, error: errorOrdenes },
       { data: totales, error: errorTotales },
@@ -251,12 +250,14 @@ async function renderListado(contenedor, clienteIdFiltro) {
 }
 
 // ---------- CREAR ----------
+// Cambios en esta ronda: confirmación antes de guardar, y protección
+// "salir sin guardar" al pulsar Cancelar si hubo cambios.
 
 async function renderCrearOrden(contenedor, clienteIdPreseleccionado) {
   contenedor.innerHTML = `
     <div class="section-header">
       <h2>Nueva orden</h2>
-      <a href="${clienteIdPreseleccionado ? `#ordenes/cliente/${clienteIdPreseleccionado}` : '#ordenes'}" class="btn btn-fantasma btn-sm">Cancelar</a>
+      <a href="${clienteIdPreseleccionado ? `#ordenes/cliente/${clienteIdPreseleccionado}` : '#ordenes'}" class="btn btn-fantasma btn-sm" id="link-cancelar-crear-orden">Cancelar</a>
     </div>
     <div id="crear-orden-error"></div>
     <form id="form-crear-orden">
@@ -278,8 +279,17 @@ async function renderCrearOrden(contenedor, clienteIdPreseleccionado) {
 
   const elError = contenedor.querySelector('#crear-orden-error');
   const elSelectCliente = contenedor.querySelector('#co-cliente');
+  const elSelectTipo = contenedor.querySelector('#co-tipo');
   const elForm = contenedor.querySelector('#form-crear-orden');
   const elBtn = contenedor.querySelector('#btn-crear-orden');
+  const elCancelar = contenedor.querySelector('#link-cancelar-crear-orden');
+  const destinoCancelar = elCancelar.getAttribute('href');
+
+  function obtenerValoresFormulario() {
+    return { cliente: elSelectCliente.value, tipo: elSelectTipo.value };
+  }
+
+  let valoresIniciales = {};
 
   try {
     const { data: clientes, error } = await supabase
@@ -295,22 +305,47 @@ async function renderCrearOrden(contenedor, clienteIdPreseleccionado) {
     if (clienteIdPreseleccionado) {
       elSelectCliente.value = clienteIdPreseleccionado;
     }
+
+    // Se captura después de cargar los clientes, para incluir el valor
+    // real por defecto del <select> (no un valor vacío inventado).
+    valoresIniciales = obtenerValoresFormulario();
   } catch (e) {
     elError.innerHTML = `<div class="banner banner-error">${traducirError(e)}</div>`;
     return;
   }
+
+  elCancelar.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (huboCambios(valoresIniciales, obtenerValoresFormulario())) {
+      const salir = await confirmar({
+        mensaje: '¿Seguro que quieres salir sin guardar?',
+        detalle: 'Los cambios que has realizado se perderán.',
+        textoConfirmar: 'Salir sin guardar',
+        textoCancelar: 'Seguir editando',
+        primarioEs: 'cancelar',
+      });
+      if (!salir) return;
+    }
+    window.location.hash = destinoCancelar;
+  });
 
   elForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     elError.innerHTML = '';
 
     const clienteId = clienteIdPreseleccionado || elSelectCliente.value;
-    const tipoOperacion = contenedor.querySelector('#co-tipo').value;
+    const tipoOperacion = elSelectTipo.value;
 
     if (!clienteId) {
       elError.innerHTML = '<div class="banner banner-error">Debes seleccionar un cliente.</div>';
       return;
     }
+
+    const confirmado = await confirmar({
+      mensaje: '¿Guardar esta nueva orden?',
+      textoConfirmar: 'Guardar',
+    });
+    if (!confirmado) return;
 
     elBtn.disabled = true;
     elBtn.textContent = 'Creando...';
@@ -334,6 +369,9 @@ async function renderCrearOrden(contenedor, clienteIdPreseleccionado) {
 }
 
 // ---------- DETALLE ----------
+// Cambio en esta ronda: confirmación antes de guardar al agregar un producto.
+// Sin botón "Cancelar" en ese formulario (fuera de alcance), y sin cambios
+// en el cambio de estado (no forma parte del alcance acordado).
 
 async function renderDetalle(contenedor, ordenId) {
   contenedor.innerHTML = `<div id="detalle-orden"></div>`;
@@ -456,6 +494,12 @@ async function cargarDetalle(contenedor, ordenId) {
         elProductoError.innerHTML = '<div class="banner banner-error">Completa todos los campos correctamente.</div>';
         return;
       }
+
+      const confirmado = await confirmar({
+        mensaje: '¿Guardar este producto?',
+        textoConfirmar: 'Guardar',
+      });
+      if (!confirmado) return;
 
       const btn = el.querySelector('#btn-agregar-producto');
       btn.disabled = true;
