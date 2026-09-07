@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { mostrarCargando, mostrarError, mostrarVacio, mostrarExito } from '../utils/ui.js';
+import { mostrarCargando, mostrarError, mostrarVacio, mostrarExito, escaparHTML } from '../utils/ui.js';
 import { traducirError } from '../utils/errors.js';
 
 export async function render(contenedor) {
@@ -149,6 +149,10 @@ export async function render(contenedor) {
             </div>
             <button class="btn btn-secundario btn-sm" data-editar="${c.id}">Editar</button>
           </div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <a href="#ordenes/cliente/${c.id}" class="btn btn-secundario btn-sm">Ver órdenes</a>
+            <a href="#ordenes/nuevo/${c.id}" class="btn btn-secundario btn-sm">+ Nueva orden</a>
+          </div>
         </div>
       `).join('');
 
@@ -164,10 +168,4 @@ export async function render(contenedor) {
   }
 
   await cargarClientes();
-}
-
-function escaparHTML(texto) {
-  const div = document.createElement('div');
-  div.textContent = texto;
-  return div.innerHTML;
 }
