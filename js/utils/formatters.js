@@ -33,6 +33,20 @@ export function formatEstado(estado) {
   return mapa[estado] || estado;
 }
 
+// Clase de badge semántica por estado — reutiliza los colores ya definidos
+// en components.css (.badge-*), sin introducir ningún color nuevo.
+export function estadoBadgeClase(estado) {
+  const mapa = {
+    pendiente_pago: 'badge-alerta', pagado: 'badge-info', en_proceso: 'badge-primario',
+    completada: 'badge-exito', cancelada: 'badge-peligro',
+    esperando_mercancia: 'badge-neutro', recibido_houston: 'badge-info',
+    preparando_envio: 'badge-info', enviado: 'badge-primario', en_transito: 'badge-primario',
+    recibido_venezuela: 'badge-primario', listo_entregar: 'badge-alerta',
+    entregado: 'badge-exito', cancelado: 'badge-peligro',
+  };
+  return mapa[estado] || 'badge-neutro';
+}
+
 export function formatTipoOperacion(tipo) {
   const mapa = {
     personal_shopper: 'Personal Shopper',
