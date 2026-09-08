@@ -15,6 +15,9 @@ export async function render(contenedor, parametros = []) {
   if (primero === 'cliente') {
     return renderListado(contenedor, segundo || null);
   }
+  if (primero === 'activas') {
+    return renderListado(contenedor, null, { soloActivas: true });
+  }
   if (primero) {
     return renderDetalle(contenedor, primero);
   }
@@ -23,7 +26,8 @@ export async function render(contenedor, parametros = []) {
 
 // ---------- LISTADO (con Seleccionar / Eliminar) ----------
 
-async function renderListado(contenedor, clienteIdFiltro) {
+async function renderListado(contenedor, clienteIdFiltro, opciones = {}) {
+  const { soloActivas = false } = opciones;
   contenedor.innerHTML = `
     <div class="section-header">
       <h2 id="ordenes-titulo">Órdenes</h2>
@@ -66,6 +70,8 @@ async function renderListado(contenedor, clienteIdFiltro) {
         contenedor.querySelector('#ordenes-titulo').textContent =
           `Órdenes de ${cliente.nombre} ${cliente.apellido || ''}`.trim();
       }
+    } else if (soloActivas) {
+      contenedor.querySelector('#ordenes-titulo').textContent = 'Órdenes activas';
     }
 
     let consulta = supabase
@@ -73,6 +79,7 @@ async function renderListado(contenedor, clienteIdFiltro) {
       .select('id, codigo, estado, tipo_operacion, creado_en, clientes(nombre, apellido)')
       .order('creado_en', { ascending: false });
     if (clienteIdFiltro) consulta = consulta.eq('cliente_id', clienteIdFiltro);
+    if (soloActivas) consulta = consulta.not('estado', 'in', `(${ESTADOS_BLOQUEADOS.join(',')})`);
 
     const [
       { data: ordenes, error: errorOrdenes },
@@ -115,7 +122,7 @@ async function renderListado(contenedor, clienteIdFiltro) {
 
     pintarFilas();
   } catch (e) {
-    mostrarError(elLista, traducirError(e), () => renderListado(contenedor, clienteIdFiltro));
+    mostrarError(elLista, traducirError(e), () => renderListado(contenedor, clienteIdFiltro, opciones));
     return;
   }
 
@@ -239,7 +246,7 @@ async function renderListado(contenedor, clienteIdFiltro) {
           const { error } = await supabase.from('ordenes').delete().in('id', eliminables);
           if (error) throw error;
           mostrarExito(`${eliminables.length} orden(es) eliminada(s)`);
-          await renderListado(contenedor, clienteIdFiltro);
+          await renderListado(contenedor, clienteIdFiltro, opciones);
         } catch (err) {
           elConfirmar.innerHTML = `<div class="banner banner-error">${traducirError(err)}</div>`;
         }
