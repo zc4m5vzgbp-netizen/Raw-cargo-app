@@ -1,7 +1,7 @@
 import { supabase } from '../supabase.js';
 import { mostrarCargando, mostrarError, mostrarVacio, mostrarExito, escaparHTML, confirmar, huboCambios } from '../utils/ui.js';
 import { traducirError } from '../utils/errors.js';
-import { formatUSD, formatFecha, formatEstado, formatTipoOperacion } from '../utils/formatters.js';
+import { formatUSD, formatFecha, formatEstado, estadoBadgeClase, formatTipoOperacion } from '../utils/formatters.js';
 
 const ESTADOS = ['pendiente_pago', 'pagado', 'en_proceso', 'completada', 'cancelada'];
 const ESTADOS_BLOQUEADOS = ['completada', 'cancelada'];
@@ -138,7 +138,7 @@ async function renderListado(contenedor, clienteIdFiltro, opciones = {}) {
             <span class="texto-tenue">${formatFecha(o.creado_en)} · ${formatTipoOperacion(o.tipo_operacion)}</span>
           </div>
           <div style="text-align:right;">
-            <span>${formatEstado(o.estado)}</span><br>
+            <span class="badge ${estadoBadgeClase(o.estado)}">${formatEstado(o.estado)}</span><br>
             <strong>${total ? formatUSD(total.precio_total_cliente) : '—'}</strong>
           </div>
         </div>
@@ -411,10 +411,13 @@ async function cargarDetalle(contenedor, ordenId) {
       <div style="margin-top:8px;">
         <span class="texto-secundario">Estado</span><br>
         ${bloqueada
-          ? `${formatEstado(orden.estado)} — estado final, no puede modificarse`
-          : `<select id="detalle-estado" class="select">
-              ${ESTADOS.map((estVal) => `<option value="${estVal}" ${estVal === orden.estado ? 'selected' : ''}>${formatEstado(estVal)}</option>`).join('')}
-            </select>
+          ? `<span class="badge ${estadoBadgeClase(orden.estado)}">${formatEstado(orden.estado)}</span> — estado final, no puede modificarse`
+          : `<div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+              <span class="badge ${estadoBadgeClase(orden.estado)}">${formatEstado(orden.estado)}</span>
+              <select id="detalle-estado" class="select" style="flex:1;">
+                ${ESTADOS.map((estVal) => `<option value="${estVal}" ${estVal === orden.estado ? 'selected' : ''}>${formatEstado(estVal)}</option>`).join('')}
+              </select>
+            </div>
             <div id="detalle-estado-error"></div>`
         }
       </div>
