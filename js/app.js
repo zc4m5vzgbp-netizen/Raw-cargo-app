@@ -90,7 +90,7 @@ function mostrarLogin() {
   elContenido.innerHTML = `
     <div style="max-width:340px;margin:60px auto 0;">
       <div style="text-align:center;margin-bottom:24px;">
-        <div class="logo-placeholder" style="width:48px;height:48px;font-size:18px;margin:0 auto 8px;">RC</div>
+        <img src="img/logo-avion.png" alt="Raw Cargo" style="height:44px;width:auto;display:block;margin:0 auto 8px;">
         <h2 style="margin:0;">Raw Cargo</h2>
       </div>
       <div class="form-grupo">
