@@ -97,6 +97,19 @@
   gap: var(--space-md);
   margin-bottom: var(--space-lg);
 }
+.stat-card-clickable {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.stat-card-clickable:hover {
+  background: var(--color-bg-secundario);
+}
+.stat-card-clickable:active {
+  box-shadow: none;
+}
 
 .badge {
   display: inline-block;
