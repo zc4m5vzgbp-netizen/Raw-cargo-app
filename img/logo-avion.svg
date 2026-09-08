@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185 101" role="img" aria-labelledby="title desc">
+  <title id="title">Raw Cargo</title>
+  <desc id="desc">Marca de Raw Cargo con avión y carga</desc>
+  <g fill="none" stroke="#1f4b8f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 58 164 20c7-2 11 7 5 11L30 76c-8 3-15-10-10-18Z" fill="#1f4b8f" stroke="none"/>
+    <path d="M83 42 70 13c-2-5 3-9 8-6l29 23" fill="#1f4b8f" stroke="none"/>
+    <path d="m92 55 13 31c2 5-3 9-8 6L68 69" fill="#1f4b8f" stroke="none"/>
+    <path d="M132 48 165 39" stroke="#fff" stroke-width="5"/>
+    <path d="M43 67 25 86" stroke="#1f4b8f" stroke-width="6"/>
+  </g>
+  <rect x="145" y="56" width="25" height="24" rx="3" fill="#14171f"/>
+  <path d="M145 63h25M157.5 56v24" stroke="#fff" stroke-width="2.5" opacity=".9"/>
+</svg>
