@@ -24,7 +24,7 @@ export async function render(contenedor) {
         <div class="stat-label">Paquetes en tránsito</div>
         <div class="skeleton" style="width:50%;height:28px;"></div>
       </a>
-      <div class="stat-card">
+      <div class="stat-card stat-card-acento">
         <div class="stat-label">Ganancia total</div>
         <div class="skeleton" style="width:70%;height:28px;"></div>
       </div>
@@ -87,7 +87,7 @@ export async function render(contenedor) {
         <div class="stat-label">Paquetes en tránsito</div>
         <div class="stat-valor">${paquetesEnTransito ?? 0}</div>
       </a>
-      <div class="stat-card">
+      <div class="stat-card stat-card-acento">
         <div class="stat-label">Ganancia total</div>
         <div class="stat-valor">${formatUSD(gananciaTotal)}</div>
       </div>
