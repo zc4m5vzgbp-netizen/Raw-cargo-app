@@ -12,18 +12,18 @@ export async function render(contenedor) {
     <p class="texto-secundario">Resumen general</p>
 
     <div class="stat-grid" id="stat-grid">
-      <div class="stat-card">
+      <a href="#clientes" class="stat-card stat-card-clickable">
         <div class="stat-label">Clientes</div>
         <div class="skeleton" style="width:50%;height:28px;"></div>
-      </div>
-      <div class="stat-card">
+      </a>
+      <a href="#ordenes/activas" class="stat-card stat-card-clickable">
         <div class="stat-label">Órdenes activas</div>
         <div class="skeleton" style="width:50%;height:28px;"></div>
-      </div>
-      <div class="stat-card">
+      </a>
+      <a href="#paquetes/transito" class="stat-card stat-card-clickable">
         <div class="stat-label">Paquetes en tránsito</div>
         <div class="skeleton" style="width:50%;height:28px;"></div>
-      </div>
+      </a>
       <div class="stat-card">
         <div class="stat-label">Ganancia total</div>
         <div class="skeleton" style="width:70%;height:28px;"></div>
@@ -75,18 +75,18 @@ export async function render(contenedor) {
     const gananciaTotal = (totales || []).reduce((acc, t) => acc + Number(t.ganancia || 0), 0);
 
     elStatGrid.innerHTML = `
-      <div class="stat-card">
+      <a href="#clientes" class="stat-card stat-card-clickable">
         <div class="stat-label">Clientes</div>
         <div class="stat-valor">${totalClientes ?? 0}</div>
-      </div>
-      <div class="stat-card">
+      </a>
+      <a href="#ordenes/activas" class="stat-card stat-card-clickable">
         <div class="stat-label">Órdenes activas</div>
         <div class="stat-valor">${ordenesActivas ?? 0}</div>
-      </div>
-      <div class="stat-card">
+      </a>
+      <a href="#paquetes/transito" class="stat-card stat-card-clickable">
         <div class="stat-label">Paquetes en tránsito</div>
         <div class="stat-valor">${paquetesEnTransito ?? 0}</div>
-      </div>
+      </a>
       <div class="stat-card">
         <div class="stat-label">Ganancia total</div>
         <div class="stat-valor">${formatUSD(gananciaTotal)}</div>
