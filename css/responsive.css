@@ -18,7 +18,9 @@
 .nav-grupo-titulo:first-child { margin-top: 0; }
 
 .nav-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px var(--space-sm);
   border-radius: var(--radius-md);
   text-decoration: none;
@@ -27,6 +29,7 @@
   font-weight: 500;
   margin-bottom: 2px;
 }
+.nav-link svg { flex-shrink: 0; }
 .nav-link.activo { background: var(--color-primario-suave); color: var(--color-primario); font-weight: 700; }
 .nav-link:hover:not(.activo) { background: var(--color-bg-secundario); }
 
@@ -63,6 +66,7 @@
 @media (min-width: 768px) {
   #nav-inferior { display: none; }
   #layout { flex-direction: row; }
+  .stat-grid { grid-template-columns: repeat(4, 1fr); }
   #nav-lateral {
     display: block;
     width: 240px;
