@@ -18,6 +18,9 @@ export async function render(contenedor, parametros = []) {
   if (primero === 'orden') {
     return renderListado(contenedor, segundo || null);
   }
+  if (primero === 'transito') {
+    return renderListado(contenedor, null, { soloTransito: true });
+  }
   if (primero) {
     return renderDetalle(contenedor, primero);
   }
@@ -26,7 +29,8 @@ export async function render(contenedor, parametros = []) {
 
 // ---------- LISTADO ----------
 
-async function renderListado(contenedor, ordenIdFiltro) {
+async function renderListado(contenedor, ordenIdFiltro, opciones = {}) {
+  const { soloTransito = false } = opciones;
   contenedor.innerHTML = `
     <div class="section-header">
       <h2 id="paquetes-titulo">Paquetes</h2>
@@ -48,6 +52,8 @@ async function renderListado(contenedor, ordenIdFiltro) {
       if (!errorOrden && orden) {
         contenedor.querySelector('#paquetes-titulo').textContent = `Paquetes de ${orden.codigo}`;
       }
+    } else if (soloTransito) {
+      contenedor.querySelector('#paquetes-titulo').textContent = 'Paquetes en tránsito';
     }
 
     let consulta = supabase
@@ -55,6 +61,7 @@ async function renderListado(contenedor, ordenIdFiltro) {
       .select('id, codigo, estado, peso_real, creado_en, ordenes(codigo, clientes(nombre, apellido))')
       .order('creado_en', { ascending: false });
     if (ordenIdFiltro) consulta = consulta.eq('orden_id', ordenIdFiltro);
+    if (soloTransito) consulta = consulta.not('estado', 'in', `(${ESTADOS_BLOQUEADOS.join(',')})`);
 
     const { data: paquetes, error } = await consulta;
     if (error) throw error;
@@ -81,7 +88,7 @@ async function renderListado(contenedor, ordenIdFiltro) {
       `;
     }).join('');
   } catch (e) {
-    mostrarError(elLista, traducirError(e), () => renderListado(contenedor, ordenIdFiltro));
+    mostrarError(elLista, traducirError(e), () => renderListado(contenedor, ordenIdFiltro, opciones));
   }
 }
 
