@@ -1,7 +1,7 @@
 import { supabase } from '../supabase.js';
 import { mostrarCargando, mostrarError, mostrarVacio, mostrarExito, escaparHTML, confirmar, huboCambios } from '../utils/ui.js';
 import { traducirError } from '../utils/errors.js';
-import { formatUSD, formatFecha, formatEstado, formatLibras } from '../utils/formatters.js';
+import { formatUSD, formatFecha, formatEstado, estadoBadgeClase, formatLibras } from '../utils/formatters.js';
 
 const ESTADOS = [
   'esperando_mercancia', 'recibido_houston', 'preparando_envio', 'enviado',
@@ -82,7 +82,7 @@ async function renderListado(contenedor, ordenIdFiltro, opciones = {}) {
               <span class="texto-secundario">${escaparHTML(p.ordenes?.codigo || '—')} · ${escaparHTML(nombreCliente)}</span><br>
               <span class="texto-tenue">${formatFecha(p.creado_en)}${p.peso_real ? ` · ${formatLibras(p.peso_real)}` : ''}</span>
             </div>
-            <span class="badge badge-neutro">${formatEstado(p.estado)}</span>
+            <span class="badge ${estadoBadgeClase(p.estado)}">${formatEstado(p.estado)}</span>
           </div>
         </a>
       `;
@@ -265,10 +265,13 @@ async function cargarDetalle(contenedor, paqueteId) {
       <div style="margin-top:8px;">
         <span class="texto-secundario">Estado</span><br>
         ${bloqueado
-          ? `${formatEstado(paquete.estado)} — estado final, no puede modificarse`
-          : `<select id="detalle-paquete-estado" class="select">
-              ${ESTADOS.map((estVal) => `<option value="${estVal}" ${estVal === paquete.estado ? 'selected' : ''}>${formatEstado(estVal)}</option>`).join('')}
-            </select>
+          ? `<span class="badge ${estadoBadgeClase(paquete.estado)}">${formatEstado(paquete.estado)}</span> — estado final, no puede modificarse`
+          : `<div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+              <span class="badge ${estadoBadgeClase(paquete.estado)}">${formatEstado(paquete.estado)}</span>
+              <select id="detalle-paquete-estado" class="select" style="flex:1;">
+                ${ESTADOS.map((estVal) => `<option value="${estVal}" ${estVal === paquete.estado ? 'selected' : ''}>${formatEstado(estVal)}</option>`).join('')}
+              </select>
+            </div>
             <div id="detalle-paquete-estado-error"></div>`
         }
       </div>
