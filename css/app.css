@@ -5,7 +5,7 @@
   --color-bg: #f5f6f8;
   --color-bg-secundario: #eef0f3;
   --color-surface: #ffffff;
-  --color-border: #e2e4e9;
+  --color-border: #dbdfe6;
 
   --color-texto: #14171f;
   --color-texto-secundario: #5b6270;
@@ -43,8 +43,8 @@
   --radius-md: 10px;
   --radius-lg: 16px;
 
-  --shadow-sm: 0 1px 2px rgba(20, 23, 31, 0.05);
-  --shadow-md: 0 2px 10px rgba(20, 23, 31, 0.06);
+  --shadow-sm: 0 1px 3px rgba(20, 23, 31, 0.09), 0 1px 2px rgba(20, 23, 31, 0.05);
+  --shadow-md: 0 4px 16px rgba(20, 23, 31, 0.10), 0 2px 6px rgba(20, 23, 31, 0.06);
 
   --header-alto: 64px;
   --nav-inferior-alto: 58px;
