@@ -29,8 +29,6 @@ function crearRutaDiferida(nombre) {
       if (!modulosCache[nombre]) {
         modulosCache[nombre] = await cargadores[nombre]();
       }
-      // Si mientras cargaba el usuario ya navegó a otra ruta, no renderizar
-      // esto encima de lo que corresponda mostrar ahora.
       if (miToken !== tokenNavegacion) return;
       const modulo = modulosCache[nombre];
       await modulo.render(contenedor, parametros);
@@ -63,8 +61,6 @@ async function iniciar() {
   session ? mostrarApp() : mostrarLogin();
 }
 
-// Evita que iniciarNavegacion() (y su listener de hashchange interno)
-// se registre más de una vez si el usuario cierra sesión y vuelve a entrar.
 let navegacionIniciada = false;
 
 function mostrarApp() {
@@ -76,10 +72,6 @@ function mostrarApp() {
     navegacionIniciada = true;
     iniciarNavegacion(elContenido);
   } else {
-    // Ya existe un listener de hashchange activo desde el primer login.
-    // En vez de registrar uno nuevo (lo que duplicaría cada render futuro),
-    // reutilizamos ese mismo listener disparando el evento manualmente para
-    // que vuelva a renderizar la ruta actual.
     window.dispatchEvent(new HashChangeEvent('hashchange'));
   }
 }
@@ -90,7 +82,7 @@ function mostrarLogin() {
   elContenido.innerHTML = `
     <div style="max-width:340px;margin:60px auto 0;">
       <div style="text-align:center;margin-bottom:24px;">
-        <img src="img/logo-avion.png" alt="Raw Cargo" style="height:44px;width:auto;display:block;margin:0 auto 8px;">
+        <img src="img/logo-avion.svg" alt="Raw Cargo" style="height:44px;width:auto;display:block;margin:0 auto 8px;">
         <h2 style="margin:0;">Raw Cargo</h2>
       </div>
       <div class="form-grupo">
