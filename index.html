@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Raw Cargo</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <script>
+    function mostrarErrorFatal(mensaje) {
+      var div = document.createElement('div');
+      div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#c0392b;color:white;padding:12px;font-family:monospace;font-size:12px;white-space:pre-wrap;';
+      div.textContent = '⚠️ ' + mensaje;
+      document.body.appendChild(div);
+    }
+    window.onerror = function(msg, url, line, col) {
+      mostrarErrorFatal('Error: ' + msg + '\n' + (url ? url.split('/').slice(-2).join('/') : '') + ':' + line + ':' + col);
+    };
+    window.addEventListener('unhandledrejection', function(e) {
+      mostrarErrorFatal('Promesa rechazada: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+    });
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <div class="marca">
+        <img src="img/logo-avion.png" alt="Raw Cargo" class="marca-icono">
+        <span>Raw Cargo</span>
+      </div>
+      <div class="dropdown" id="usuario-dropdown">
+        <button id="btn-usuario" style="background:none;border:none;cursor:pointer;padding:0;">
+          <span class="avatar" id="avatar-iniciales">··</span>
+        </button>
+        <div class="dropdown-menu" id="menu-usuario" hidden>
+          <div style="padding:10px 16px;font-size:13px;color:var(--color-texto-secundario);border-bottom:1px solid var(--color-border);" id="email-usuario">—</div>
+          <button id="btn-cerrar-sesion">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+    <div id="layout">
+      <nav id="nav-lateral">
+        <div class="nav-grupo-titulo">Principal</div>
+        <a class="nav-link" href="#dashboard">Inicio</a>
+        <a class="nav-link" href="#clientes">Clientes</a>
+        <a class="nav-link" href="#ordenes">Órdenes</a>
+        <a class="nav-link" href="#paquetes">Paquetes</a>
+        <div class="nav-grupo-titulo">Operaciones</div>
+        <a class="nav-link" href="#pagos">Pagos</a>
+        <a class="nav-link" href="#finanzas">Finanzas</a>
+        <div class="nav-grupo-titulo">Más</div>
+        <a class="nav-link" href="#gastos">Gastos</a>
+        <a class="nav-link" href="#configuracion">Configuración</a>
+        <a class="nav-link" href="#historial">Historial</a>
+      </nav>
+      <main id="contenido">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </main>
+    </div>
+    <nav id="nav-inferior">
+      <a href="#dashboard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5" /><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" /></svg>
+        Inicio
+      </a>
+      <a href="#clientes">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg>
+        Clientes
+      </a>
+      <a href="#ordenes">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 3.5h6v2H9z" /><path d="M8.5 11h7M8.5 15h7" /></svg>
+        Órdenes
+      </a>
+      <a href="#paquetes">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8 12 4l8.5 4-8.5 4-8.5-4Z" /><path d="M3.5 8v8L12 20l8.5-4V8" /><path d="M12 12v8" /></svg>
+        Paquetes
+      </a>
+      <button id="btn-mas">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
+        Más
+      </button>
+    </nav>
+    <div id="mas-sheet-fondo" class="modal-fondo" hidden>
+      <div class="modal">
+        <div class="section-header">
+          <h3>Más</h3>
+          <button id="btn-cerrar-mas" class="btn btn-fantasma btn-sm">Cerrar</button>
+        </div>
+        <a class="nav-link" href="#pagos">Pagos</a>
+        <a class="nav-link" href="#finanzas">Finanzas</a>
+        <hr class="divider">
+        <a class="nav-link" href="#gastos">Gastos</a>
+        <a class="nav-link" href="#configuracion">Configuración</a>
+        <a class="nav-link" href="#historial">Historial</a>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
